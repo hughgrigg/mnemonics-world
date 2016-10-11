@@ -1,0 +1,20 @@
+{
+    "name": "hughgrigg/mnemonics-world",
+    "description": "Mnemonics World",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Hugh Grigg",
+            "email": "hugh.grigg@gmail.com"
+        }
+    ],
+    "require": {
+        "ext-phalcon": "*",
+        "php": "^7"
+    },
+    "require-dev": {
+        "phalcon/devtools": "^3.0",
+        "ext-xdebug": "*"
+    }
+}
