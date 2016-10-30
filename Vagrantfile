@@ -9,7 +9,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Base Box
   # --------------------
   config.vm.box = "ubuntu/trusty64"
-  config.vm.hostname = "www.mnemonics-world.dev"
+  config.vm.hostname = "www.mnemonicsworld.dev"
 
   # Connect to IP
   # Note: Use an IP that doesn't conflict with any OS's DHCP (Below is a safe bet)
@@ -43,8 +43,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Synced Folders
   # --------------------
-  config.vm.synced_folder ".", "/vagrant/", :mount_options => [ "dmode=777", "fmode=666" ]
-  config.vm.synced_folder "./www", "/vagrant/www/", :mount_options => [ "dmode=775", "fmode=644" ]
+  config.vm.synced_folder ".", "/vagrant/mnemonicsworld/", :mount_options => [ "dmode=777", "fmode=666" ]
 
   # Provisioning Scripts
   # --------------------
@@ -53,4 +52,3 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision :shell, inline: "service redis-server restart;"
   config.vm.provision :shell, inline: "service nginx restart;", run: "always"
 end
-

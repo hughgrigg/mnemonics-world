@@ -1,11 +1,10 @@
 #!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
 
 export DEBIAN_FRONTEND=noninteractive
 export COMPOSER_ALLOW_SUPERUSER=1
 export ZEPHIRDIR=/usr/share/zephir
-export LANGUAGE=en_GB.UTF-8
-export LANG=en_GB.UTF-8
-export LC_ALL=en_GB.UTF-8
 
 #
 # Add Swap
@@ -18,15 +17,21 @@ echo "/swapspace none swap defaults 0 0" >> /etc/fstab
 echo nameserver 8.8.8.8 > /etc/resolv.conf
 echo nameserver 8.8.4.4 > /etc/resolv.conf
 
+apt-get update --quiet --fix-missing
+apt-get dist-upgrade --quiet --yes \
+    -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
+
 #
-# Add PHP and PostgreSQL repositories
+# Add PHP, PostgreSQL and Nginx repositories
 #
-LC_ALL=en_GB.UTF-8 add-apt-repository -y ppa:ondrej/php
+add-apt-repository -y ppa:ondrej/php
 apt-add-repository -y ppa:chris-lea/libsodium
 add-apt-repository -y ppa:chris-lea/redis-server
 touch /etc/apt/sources.list.d/pgdg.list
 echo -e "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" | tee -a /etc/apt/sources.list.d/pgdg.list &>/dev/null
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+echo "deb http://ppa.launchpad.net/nginx/stable/ubuntu $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/nginx-stable.list
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C300EE8C
 
 # Cleanup package manager
 apt-get clean
@@ -38,16 +43,11 @@ apt-get upgrade -y --force-yes
 apt-get install -y build-essential software-properties-common python-software-properties
 
 #
-# Setup locales
-#
-echo -e "LC_CTYPE=en_GB.UTF-8\nLC_ALL=en_GB.UTF-8\nLANG=en_GB.UTF-8\nLANGUAGE=en_GB.UTF-8" | tee -a /etc/environment &>/dev/null
-locale-gen en_GB en_GB.UTF-8
-dpkg-reconfigure locales
-
-#
 # Base system
 #
-apt-get -q -y install
+apt-get --quiet --yes --force-yes \
+  -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
+  install \
   memcached \
   postgresql-9.4 \
   sqlite3 \
@@ -69,13 +69,17 @@ apt-get -q -y install
   lsb-core \
   autoconf \
   redis-server \
-  redis-tools
+  redis-tools \
+  nginx
 
 #
 # Base PHP
 #
-apt-get install -y --no-install-recommends \
+apt-get --quiet --yes --force-yes --no-install-recommends \
+  -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
+  install \
   php7.0 \
+  php7.0-fpm \
   php7.0-apcu \
   php7.0-bcmath \
   php7.0-bz2 \
@@ -101,7 +105,8 @@ apt-get install -y --no-install-recommends \
   php7.0-xdebug \
   php7.0-xsl \
   php7.0-xml \
-  php7.0-zip
+  php7.0-zip \
+  php7.0-yaml
 
 #
 # Update PECL channel
@@ -111,8 +116,20 @@ pecl channel-update pecl.php.net
 #
 # Nginx
 #
+cp -f /vagrant/mnemonicsworld/vagrant/mnemonicsworld.conf /etc/nginx/sites-enabled/mnemonicsworld.conf
+mkdir /etc/nginx/ssl 2>/dev/null
 
-cp -f /vagrant/vagrant/nginx.conf /etc/nginx/sites-enabled/nginx.conf
+PATH_SSL="/etc/nginx/ssl"
+PATH_KEY="${PATH_SSL}/mnemonicsworld.key"
+PATH_CSR="${PATH_SSL}/mnemonicsworld.csr"
+PATH_CRT="${PATH_SSL}/mnemonicsworld.crt"
+
+if [ ! -f $PATH_KEY ] || [ ! -f $PATH_CSR ] || [ ! -f $PATH_CRT ]
+then
+  openssl genrsa -out "$PATH_KEY" 2048 2>/dev/null
+  openssl req -new -key "$PATH_KEY" -out "$PATH_CSR" -subj "/CN=mnemonicsworld/O=Vagrant/C=UK" 2>/dev/null
+  openssl x509 -req -days 365 -in "$PATH_CSR" -signkey "$PATH_KEY" -out "$PATH_CRT" 2>/dev/null
+fi
 
 #
 # Tune Up Postgres
@@ -120,13 +137,6 @@ cp -f /vagrant/vagrant/nginx.conf /etc/nginx/sites-enabled/nginx.conf
 cp /etc/postgresql/9.4/main/pg_hba.conf /etc/postgresql/9.4/main/pg_hba.bkup.conf
 sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres'" &>/dev/null
 sed -i.bak -E 's/local\s+all\s+postgres\s+peer/local\t\tall\t\tpostgres\t\ttrust/g' /etc/postgresql/9.4/main/pg_hba.conf
-
-#
-# YAML
-#
-(CFLAGS="-O1 -g3 -fno-strict-aliasing"; pecl install yaml < /dev/null &)
-touch /etc/php/7.0/mods-available/yaml.ini
-echo 'extension = yaml.so' | tee /etc/php/7.0/mods-available/yaml.ini &>/dev/null
 
 #
 # Libsodium
@@ -150,6 +160,7 @@ git clone --depth=1 git://github.com/phalcon/cphalcon.git
 (cd cphalcon && zephir fullclean && zephir builddev)
 touch /etc/php/7.0/mods-available/phalcon.ini
 echo -e "extension=phalcon.so" | tee /etc/php/7.0/mods-available/phalcon.ini &>/dev/null
+echo -e "extension=phalcon.so" | tee /etc/php/7.0/fpm/conf.d/23-phalcon.ini &>/dev/null
 
 #
 # Tune Up Redis
@@ -189,15 +200,3 @@ phpenmod -v 7.0 yaml mcrypt intl curl libsodium phalcon xdebug soap
 #
 apt-get autoremove -y
 apt-get autoclean -y
-
-echo -e "----------------------------------------"
-echo -e "To create a Phalcon Project:\n"
-echo -e "----------------------------------------"
-echo -e "$ cd /vagrant/www"
-echo -e "$ phalcon project <projectname>\n"
-echo -e
-echo -e "Then follow the README.md to copy/paste the VirtualHost!\n"
-
-echo -e "----------------------------------------"
-echo -e "Default Site: http://192.168.50.4"
-echo -e "----------------------------------------"

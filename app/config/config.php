@@ -24,6 +24,6 @@ return new \Phalcon\Config([
         'pluginsDir'     => APP_PATH . '/plugins/',
         'libraryDir'     => APP_PATH . '/library/',
         'cacheDir'       => BASE_PATH . '/cache/',
-        'baseUri'        => '/mnemonics-world-2/',
+        'baseUri'        => '/mnemonicsworld-2/',
     ]
 ]);
