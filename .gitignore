@@ -1,2 +1,6 @@
 .vagrant
 vendor
+node_modules/
+public/css
+public/js
+*.log

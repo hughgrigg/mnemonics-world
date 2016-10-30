@@ -188,6 +188,16 @@ echo "export PTOOLSPATH=/opt/phalcon-tools/" >> /home/vagrant/.profile
 echo "export PATH=\$PATH:/opt/phalcon-tools/" >> /home/vagrant/.profile
 chmod +x /opt/phalcon-tools/phalcon.sh
 ln -s /opt/phalcon-tools/phalcon.sh /usr/bin/phalcon
+(cd /vagrant/mnemonicsworld && composer install)
+
+#
+# npm
+#
+curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+sudo apt-get install -y nodejs
+npm install --global gulp-cli
+npm install --global webpack
+(cd /vagrant/mnemonicsworld && npm install)
 
 #
 # Tune UP PHP
