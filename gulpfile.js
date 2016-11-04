@@ -1,17 +1,42 @@
 /*jslint node: true */
 "use strict";
 
-var gulp       = require("gulp");
-var rev        = require("gulp-rev");
-var sass       = require("gulp-sass");
-var scssLint   = require("gulp-scss-lint");
-var sourceMap  = require("gulp-sourcemaps");
-var autoPrefix = require("gulp-autoprefixer");
-var cleanCSS   = require("gulp-clean-css");
-var webpack    = require('webpack-stream');
-var template   = require('gulp-template');
+var gulp        = require("gulp");
+var runSequence = require("run-sequence");
+var clean       = require("gulp-clean");
+var copy        = require("gulp-copy");
+var rev         = require("gulp-rev");
+var sass        = require("gulp-sass");
+var scssLint    = require("gulp-scss-lint");
+var sourceMap   = require("gulp-sourcemaps");
+var autoPrefix  = require("gulp-autoprefixer");
+var cleanCSS    = require("gulp-clean-css");
+var webpack     = require('webpack-stream');
+var template    = require('gulp-template');
 
-gulp.task("default", ["styles", "scripts", "asset-template"]);
+gulp.task("default", function (callback) {
+    return runSequence(
+        "clean",
+        ["copy", "styles", "scripts"],
+        "asset-template",
+        callback
+    );
+});
+
+gulp.task("clean", function () {
+    return gulp.src([
+        "./cache/**/*.php",
+        "./public/css/**/*.*",
+        "./public/js/**/*.*",
+        "./public/img/**/*.*",
+        "./views/build/**/*.*"
+    ]).pipe(clean());
+});
+
+gulp.task("copy", function () {
+    return gulp.src("./resources/assets/img/**")
+        .pipe(copy("./public/img/", {prefix: 3}));
+});
 
 gulp.task("styles", function () {
     return gulp.src([
@@ -33,10 +58,6 @@ gulp.task("styles", function () {
         .pipe(gulp.dest("./public/css"))
         .pipe(rev.manifest("rev_manifest.json"))
         .pipe(gulp.dest("./public/css/"));
-});
-
-gulp.task("sass:watch", function () {
-    gulp.watch("./resources/assets/sass/**/*.scss", ["styles"]);
 });
 
 gulp.task("scss-lint", function () {

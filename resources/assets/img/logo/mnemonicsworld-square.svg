@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   width="64mm"
+   height="64mm"
+   viewBox="0 0 226.77166 226.77165"
+   id="svg2"
+   version="1.1">
+  <defs
+     id="defs4" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     transform="translate(-204.5305,-193.71004)">
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4136"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"><flowRegion
+         id="flowRegion4138"><rect
+           id="rect4140"
+           width="471.42856"
+           height="326.42856"
+           x="87.14286"
+           y="217.3622" /></flowRegion><flowPara
+         id="flowPara4142" /></flowRoot>    <g
+       style="font-style:normal;font-weight:normal;font-size:261.02746582px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#71c837;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="text4223"
+       transform="translate(71.464909,18.380796)">
+      <path
+         d="m 255.5892,235.84793 c 2.61027,0 4.61148,0.69607 6.00363,2.08822 1.56617,1.39215 2.52327,2.78429 2.8713,4.17644 l 16.96679,54.29371 15.92267,-84.29371 c 0.34804,-1.39215 1.21813,-2.78429 2.61028,-4.17644 1.56617,-1.39215 3.65439,-2.08822 6.26466,-2.08822 l 46.19823,0 c 1.74018,0 3.21933,0.60906 4.43746,1.82719 1.21813,1.21813 1.8272,2.69729 1.8272,4.43747 0,0.69607 -0.087,1.39215 -0.26103,2.08822 l -38.11001,150.85572 c -0.52205,1.56616 -1.47915,3.04531 -2.8713,4.43746 -1.21813,1.39215 -3.13234,2.08822 -5.74261,2.08822 l -40.97768,0 c -2.61027,0 -4.61148,-0.69607 -6.00363,-2.08822 -1.21813,-1.39215 -2.08822,-2.8713 -2.61027,-4.43746 l -18.53295,-52.72755 -18.79398,52.72755 c -0.52205,1.56616 -1.47915,3.04531 -2.8713,4.43746 -1.21813,1.39215 -3.13234,2.08822 -5.74261,2.08822 l -34.97768,0 c -2.61027,0 -4.61148,-0.69607 -6.00363,-2.08822 -1.21813,-1.39215 -2.08822,-2.8713 -2.61027,-4.43746 l -38.11001,-94.85572 c -0.17402,-0.69607 -0.26103,-1.39215 -0.26103,-2.08822 0,-1.74018 0.60906,-3.21934 1.82719,-4.43747 1.21813,-1.21813 2.69728,-1.82719 4.43747,-1.82719 l 40.19823,0 c 2.61027,0 4.61148,0.69607 6.00363,2.08822 1.56617,1.39215 2.52327,2.78429 2.8713,4.17644 l 15.92268,28.29371 16.96678,-54.29371 c 0.34804,-1.39215 1.21813,-2.78429 2.61028,-4.17644 1.56616,-1.39215 3.65438,-2.08822 6.26466,-2.08822 z"
+         style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-family:Rubik;-inkscape-font-specification:'Rubik Heavy';fill:#71c837;fill-opacity:1"
+         id="path4228" />
+    </g>
+  </g>
+</svg>

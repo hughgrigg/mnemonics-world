@@ -3,4 +3,7 @@ vendor
 node_modules/
 public/css
 public/js
+public/img
 *.log
+cache/
+build/

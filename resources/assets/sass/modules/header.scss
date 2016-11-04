@@ -1,0 +1,22 @@
+.header {
+  background: url('/img/bg/asanoha-400px.png') fixed;
+  line-height: .75;
+  padding: 1em;
+}
+
+.site-titles {
+  padding-top: .6em;
+}
+
+.site-title {
+  font-weight: 500;
+  margin: 0;
+}
+
+.site-subtitle {
+  color: $dark-gray;
+
+  @include breakpoint(medium up) {
+    font-size: 1.7em;
+  }
+}
