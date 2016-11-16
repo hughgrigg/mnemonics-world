@@ -7,3 +7,4 @@ public/img
 *.log
 cache/
 build/
+keys.yml

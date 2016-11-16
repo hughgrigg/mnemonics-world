@@ -1,0 +1,45 @@
+---
+
+- include_vars: ../keys.yml
+
+- name: Update apt cache
+  become: true
+  apt: update_cache=yes
+
+- name: Install Postgresql ubuntu
+  become: true
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - postgresql-9.5
+    - postgresql-client-9.5
+    - postgresql-contrib-9.5
+    - libpq-dev
+  tags: postgres_install
+
+- name: Create database user
+  become: true
+  command: sudo -u postgres createuser --createdb --login --createrole --no-superuser --echo {{dbuser}}
+  ignore_errors: yes
+
+- name: Create database
+  become: true
+  command: sudo -u postgres psql -c "CREATE DATABASE {{dbname}} OWNER {{dbuser}} ENCODING = 'unicode';"
+  ignore_errors: yes
+
+#- name: Put pg_hba.conf file in place ubuntu
+#  become: true
+#  copy: src=pg_hba.conf
+#        dest=/etc/postgresql/9.5/main/pg_hba.conf
+#        owner=postgres
+#        group=postgres
+#        mode=0640
+#  tags: postgres_install
+
+- name: Listen on all addresses.
+  become: true
+  command: sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/9.5/main/postgresql.conf
+
+- name: Restart postgres ubuntu
+  become: true
+  service: name=postgresql state=restarted
+  tags: one

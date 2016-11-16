@@ -13,7 +13,7 @@
 {% block body %}
 {% endblock %}
 
-<link href="https://fonts.googleapis.com/css?family=Libre+Baskerville|Rubik"
+<link href="https://fonts.googleapis.com/css?family=Libre+Baskerville|Rubik:400"
       rel="stylesheet">
 
 </body>

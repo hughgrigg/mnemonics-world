@@ -16,4 +16,8 @@
             </div>
         </div>
     </div>
+
+    <p class="coming-soon">
+        Coming soon.
+    </p>
 {% endblock %}

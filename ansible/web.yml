@@ -1,0 +1,254 @@
+---
+- hosts: web
+  become: true
+  gather_facts: no
+  pre_tasks:
+    - name: 'install python2'
+      raw: sudo apt-get -y install python-simplejson
+
+  tasks:
+
+    #
+    # Apt
+    #
+
+    - name: install core packages
+      apt: name={{ item }} update_cache=yes state=latest
+      with_items:
+        - ca-certificates
+
+    - name: add PHP 7 repository
+      apt_repository: repo='ppa:ondrej/php' state=present
+      register: ppastable
+
+    - name: install packages
+      apt: name={{ item }} update_cache=yes state=latest
+      with_items:
+        - ca-certificates
+        - build-essential
+        - git
+        - htop
+        - imagemagick
+        - libpq-dev
+        - makepasswd
+        - mcrypt
+        - nginx
+        - nodejs
+        - npm
+        - php7.0
+        - php7.0-apcu
+        - php7.0-bcmath
+        - php7.0-bz2
+        - php7.0-cli
+        - php7.0-curl
+        - php7.0-dev
+        - php7.0-dom
+        - php7.0-fpm
+        - php7.0-gd
+        - php7.0-gmp
+        - php7.0-igbinary
+        - php7.0-imagick
+        - php7.0-imap
+        - php7.0-intl
+        - php7.0-json
+        - php7.0-mbstring
+        - php7.0-mcrypt
+        - php7.0-memcache
+        - php7.0-pgsql
+        - php7.0-redis
+        - php7.0-soap
+        - php7.0-sqlite3
+        - php7.0-xml
+        - php7.0-yaml
+        - php7.0-zip
+        - php-pear
+        - postgresql
+        - postgresql-contrib
+        - python-psycopg2
+        - python-software-properties
+        - re2c
+        - redis-server
+        - software-properties-common
+        - sqlite3
+        - supervisor
+
+    - name: ensure github.com is a known host
+      lineinfile:
+        dest: /root/.ssh/known_hosts
+        create: yes
+        state: present
+        line: "{{ lookup('pipe', 'ssh-keyscan -t rsa github.com') }}"
+        regexp: "^github\\.com"
+
+    #
+    # PHP
+    #
+
+    - name: PHP web memory limit
+      lineinfile:
+        dest: /etc/php/7.0/fpm/php.ini
+        create: no
+        state: present
+        line: "memory_limit = 512M"
+        regexp: "^memory_limit = "
+
+    - name: PHP max upload size
+      lineinfile:
+        dest: /etc/php/7.0/fpm/php.ini
+        create: no
+        state: present
+        line: "upload_max_filesize = 20M"
+        regexp: "^upload_max_filesize = "
+
+    - name: PHP max filesize
+      lineinfile:
+        dest: /etc/php/7.0/fpm/php.ini
+        create: no
+        state: present
+        line: "post_max_size = 100M"
+        regexp: "^post_max_size = "
+
+    - name: ensure php7.0-fpm cgi.fix_pathinfo=0
+      lineinfile: dest=/etc/php/7.0/fpm/php.ini regexp='^(.*)cgi.fix_pathinfo=' line=cgi.fix_pathinfo=0
+      notify:
+        - restart php7.0-fpm
+        - restart nginx
+
+    - name: install composer
+      shell: curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+             creates=/usr/local/bin/composer
+
+    - name: update composer
+      shell: /usr/local/bin/composer self-update
+
+    #
+    # Phalcon
+    #
+
+    - name: add phalcon to apt
+      shell: curl -s https://packagecloud.io/install/repositories/phalcon/stable/script.deb.sh | bash
+
+    - name: install phalcon
+      apt: name=php7.0-phalcon update_cache=yes state=latest
+      notify:
+          - restart php7.0-fpm
+          - restart nginx
+
+    #
+    # Postgres
+    #
+
+    - include: include/postgres.yml
+
+    #
+    # Project
+    #
+
+    - name: create /var/www/ directory
+      file: dest=/var/www/
+            state=directory
+            owner=www-data
+            group=www-data
+            mode=0700
+
+    - name: create /var/log/mnemonicsworld directory
+      file: dest=/var/log/mnemonicsworld
+            state=directory
+            owner=www-data
+            group=www-data
+            mode=0700
+
+    - name: clone git repository
+      become_user: www-data
+      git: >
+        dest=/var/www/mnemonicsworld
+        repo=https://github.com/hughgrigg/mnemonicsworld.git
+        version=master
+        update=yes
+        force=yes
+
+    - name: install project with composer
+      become_user: www-data
+      composer: command=install working_dir=/var/www/mnemonicsworld
+
+    #
+    # Webserver
+    #
+
+    - name: configure nginx
+      template: src={{item.src}} dest={{item.dest}}
+      with_items:
+        - {src: 'mnemonicsworld.conf', dest: '/etc/nginx/sites-available/mnemonicsworld.conf'}
+      notify:
+        - restart php7.0-fpm
+        - restart nginx
+
+    - name: enable nginx site
+      file: src=/etc/nginx/sites-available/mnemonicsworld.conf
+            dest=/etc/nginx/sites-enabled/mnemonicsworld.conf
+            state=link
+      notify:
+        - restart php7.0-fpm
+        - restart redis
+        - restart nginx
+
+    - name: Copy public key into /var/www
+      authorized_key: user=www-data
+                      key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+    - name: Set www-data user shell
+      user: name=www-data shell=/bin/bash
+
+    - name: Enable UFW
+      ufw: direction=incoming policy=deny state=enabled
+
+    - name: UFW limit SSH
+      ufw: rule=limit port=ssh
+
+    - name: UFW open HTTP
+      ufw: rule=allow port=http
+
+    - name: UFW open HTTPS
+      ufw: rule=allow port=https
+
+    - include_vars: keys.yml
+
+    #
+    # Node
+    #
+
+    - name: symlink node
+      file: src=/usr/bin/nodejs dest=/usr/bin/node state=link
+
+    - name: make sure latest npm is installed
+      npm: name=npm global=yes
+
+    - name: create /var/www/mnemonicsworld/node_modules directory
+      file: dest=/var/www/mnemonicsworld/node_modules
+            state=directory
+            owner=www-data
+            group=www-data
+            mode=0700
+
+    - npm: path=/var/www/mnemonicsworld production=yes
+      become_user: www-data
+
+    - name: rebuild node-sass
+      shell: "npm rebuild node-sass"
+
+    - name: run gulp tasks
+      become_user: www-data
+      shell: "cd /var/www/mnemonicsworld && ./node_modules/.bin/gulp {{ item }} --production"
+      with_items:
+        - "default"
+
+  handlers:
+
+    - name: restart php7.0-fpm
+      service: name=php7.0-fpm state=restarted
+
+    - name: restart nginx
+      service: name=nginx state=restarted
+
+    - name: restart redis
+      service: name=redis-server state=restarted
