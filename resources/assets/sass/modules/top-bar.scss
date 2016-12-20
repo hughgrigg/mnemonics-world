@@ -1,0 +1,30 @@
+.top-bar-link {
+  color: $white;
+
+  &:hover {
+    color: $white;
+  }
+}
+
+.top-bar-logo {
+  height: 100%;
+  max-height: 2em;
+  width: auto;
+}
+
+.top-bar,
+.menu-text {
+  color: $white;
+  font-family: $font-serif;
+}
+
+.site-title {
+  display: inline-block;
+  padding: .7rem 1rem;
+}
+
+.coming-soon {
+  font-size: 2em;
+  padding: 2em;
+  text-align: center;
+}
